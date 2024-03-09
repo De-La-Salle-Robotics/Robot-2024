@@ -2,6 +2,9 @@ package frc.robot.subsystem;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -12,13 +15,25 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 public class ClimbSubsystem implements Subsystem {
     TalonFX climbMotor = new TalonFX(9, "Default Name");
 
-    VoltageOut leftRequest = new VoltageOut(0);
+    VictorSPX winchMotor = new VictorSPX(25);
 
-    public ClimbSubsystem(){}
+    VoltageOut climbRequest = new VoltageOut(0);
 
-    public Command manualCommand(DoubleSupplier output) {
-        return new RunCommand(()->{
-            climbMotor.setControl(leftRequest.withOutput(output.getAsDouble()));
+    public ClimbSubsystem() {
+        var climbConfig = new TalonFXConfiguration();
+        climbConfig.CurrentLimits.withStatorCurrentLimit(4)
+                                 .withStatorCurrentLimitEnable(true);
+        climbMotor.getConfigurator().apply(climbConfig);
+
+        winchMotor.configFactoryDefault();
+    }
+
+    public Command manualCommand(DoubleSupplier climbOutput, DoubleSupplier winchOutput) {
+        return new RunCommand(() -> {
+            climbMotor.setControl(climbRequest.withOutput(climbOutput.getAsDouble()));
+
+            winchMotor.set(ControlMode.PercentOutput, winchOutput.getAsDouble());
+
         }, this);
     }
 }

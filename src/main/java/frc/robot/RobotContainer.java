@@ -4,109 +4,137 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.XboxController.Button;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystem.ArmSubsystem;
 import frc.robot.subsystem.IntakeSubsystem;
 import frc.robot.subsystem.ShooterSubsystem;
+import frc.robot.subsystem.ArmSubsystem.ArmPositions;
+import frc.robot.subsystem.ShooterSubsystem.TargetSpeeds;
 import frc.robot.subsystem.ClimbSubsystem;
 
 public class RobotContainer {
-  private double MaxSpeed = 6; // 6 meters per second desired top speed
-  private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
+    private double MaxSpeed = 6; // 6 meters per second desired top speed
+    private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
-  /* Setting up bindings for necessary control of the swerve drive platform */
-  private final CommandXboxController joystick = new CommandXboxController(0); // Driver joystick
-  private final CommandXboxController op_joystick = new CommandXboxController(1); // Op joystick
-  private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
+    /* Setting up bindings for necessary control of the swerve drive platform */
+    private final CommandXboxController driverJoystick = new CommandXboxController(0); // Driver joystick
+    private final CommandXboxController operatorJoystick = new CommandXboxController(1); // Op joystick
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
 
-  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
-                                                               // driving in open loop
-  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-  private final Telemetry logger = new Telemetry(MaxSpeed);
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
+                                                                     // driving in open loop
+    private final SwerveRequest.RobotCentric robotCentricDrive = new SwerveRequest.RobotCentric()
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-  private final ArmSubsystem armSubsystem = new ArmSubsystem();
-  private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
-  private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    private final Telemetry logger = new Telemetry(MaxSpeed);
 
-  private void configureBindings() {
-    drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
-                                                                                           // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+    private final ArmSubsystem armSubsystem = new ArmSubsystem();
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+    private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+    private final ClimbSubsystem climbSubsystem = new ClimbSubsystem();
+
+    private enum RobotShootState {
+        Amp,
+        Podium,
+        Subwoofer
+    }
+    RobotShootState m_currentState = RobotShootState.Amp;
+
+    private void configureBindings() {
+        drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-driverJoystick.getLeftY() * MaxSpeed) // Drive forward with // negative Y (forward)
+                        .withVelocityY(-driverJoystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-driverJoystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                ));
+
+        driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+
+        driverJoystick.leftBumper().onTrue(armSubsystem.goToPosition(() -> ArmPositions.Down))
+                .whileTrue(intakeSubsystem.intakeNote()
+                        .onlyWhile(armSubsystem::atPosition)
+                        .until(intakeSubsystem::hasNote)
+                .andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
+
+        driverJoystick.y().onTrue(armSubsystem.goToPosition(()->ArmPositions.Stow));
+        driverJoystick.x().onTrue(new InstantCommand(()->m_currentState = RobotShootState.Amp));
+        driverJoystick.a().onTrue(new InstantCommand(()->m_currentState = RobotShootState.Subwoofer));
+        driverJoystick.b().onTrue(new InstantCommand(()->m_currentState = RobotShootState.Podium));
+
+        driverJoystick.leftTrigger().onTrue(armSubsystem.goToPosition(()->
+            switch(m_currentState) {
+                case Amp -> ArmPositions.Amp;
+                case Podium -> ArmPositions.Podium;
+                case Subwoofer -> ArmPositions.Subwoofer;
+            }
+        )).whileTrue(shooterSubsystem.goToSpeed(() ->
+            switch(m_currentState) {
+                case Amp -> TargetSpeeds.AmpShot;
+                case Podium -> TargetSpeeds.PodiumShot;
+                case Subwoofer -> TargetSpeeds.SubwooferShot;
+            }
         ));
 
-    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.b().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+        driverJoystick.rightTrigger().and(shooterSubsystem::atSpeed).and(armSubsystem::atPosition).onTrue(intakeSubsystem.shootNote());
 
-    // reset the field-centric heading on left bumper press
-    joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+        // reset the field-centric heading on left bumper press
+        driverJoystick.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+        driverJoystick.povRight().onTrue(drivetrain.applyRequest(()->
+                                robotCentricDrive.withVelocityX(-driverJoystick.getLeftY() * MaxSpeed)
+                                .withVelocityY(-driverJoystick.getLeftX() * MaxSpeed)
+                                .withRotationalRate(-driverJoystick.getRightX() * MaxAngularRate)).until(driverJoystick.povLeft()));
+        drivetrain.registerTelemetry(logger::telemeterize);
 
-    if (Utils.isSimulation()) {
-      drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
+        new Trigger(()->Math.abs(operatorJoystick.getLeftY()) > 0.1).whileTrue(
+            armSubsystem.manualCommand(()->operatorJoystick.getLeftY())
+        );
+
+        operatorJoystick.back().onTrue(armSubsystem.zeroArm(true));
+        operatorJoystick.povUp().onTrue(armSubsystem.goToPosition(()->ArmPositions.Stow));
+        operatorJoystick.povDown().onTrue(armSubsystem.goToPosition(()->ArmPositions.Subwoofer));
+        operatorJoystick.povLeft().onTrue(armSubsystem.goToPosition(()->ArmPositions.Amp));
+        operatorJoystick.povRight().onTrue(armSubsystem.goToPosition(()->ArmPositions.Podium));
+
+        operatorJoystick.leftTrigger().whileTrue(intakeSubsystem.manualCommand(()->7));
+        operatorJoystick.rightTrigger().whileTrue(intakeSubsystem.manualCommand(()->-7));
+
+        operatorJoystick.rightBumper().whileTrue(shooterSubsystem.manualCommand(()->3.8));
+        operatorJoystick.rightTrigger().whileTrue(shooterSubsystem.manualCommand(()->-3.8));
+
+        operatorJoystick.y().whileTrue(climbSubsystem.manualCommand(()->1, ()->0));
+        operatorJoystick.a().whileTrue(climbSubsystem.manualCommand(()->-1, ()->0));
+        operatorJoystick.x().whileTrue(climbSubsystem.manualCommand(()->0, ()->0.4));
+        operatorJoystick.b().whileTrue(climbSubsystem.manualCommand(()->0, ()->-0.4));
+
+        // Arm
+        armSubsystem.setDefaultCommand(armSubsystem.holdPosition());
+
+        // Intake
+        intakeSubsystem.setDefaultCommand(intakeSubsystem.manualCommand(() -> 0));
+
+        // Shooter
+        shooterSubsystem.setDefaultCommand(shooterSubsystem.manualCommand(() -> 0));
+
+        // Climb
+        climbSubsystem.setDefaultCommand(climbSubsystem.manualCommand(()->0, ()->0));
     }
-    drivetrain.registerTelemetry(logger::telemeterize);
 
-    // Arm
-    op_joystick.y().whileTrue(armSubsystem.manualCommand(()->7));
-    op_joystick.a().whileTrue(armSubsystem.manualCommand(()->-3));
-    armSubsystem.setDefaultCommand(armSubsystem.manualCommand(()->0));
+    public RobotContainer() {
+        configureBindings();
+    }
 
-    // Intake 
-    op_joystick.leftBumper().whileTrue(intakeSubsystem.manualCommand(()->7));
-    op_joystick.rightBumper().whileTrue(intakeSubsystem.manualCommand(()->-7));
-    intakeSubsystem.setDefaultCommand(intakeSubsystem.manualCommand(()->0));
-
-   
-    //Shooter
-    op_joystick.leftTrigger().whileTrue(shooterSubsystem.manualCommand(()->3.8));
-    op_joystick.rightTrigger().whileTrue(shooterSubsystem.manualCommand(()->-3.8));
-    op_joystick.leftTrigger().whileTrue(intakeSubsystem.manualCommand(()->-9));
-    op_joystick.rightTrigger().whileTrue(intakeSubsystem.manualCommand(()->9));
-    shooterSubsystem.setDefaultCommand(shooterSubsystem.manualCommand(()->0));
-
-     //Amp
-    op_joystick.button(7).whileTrue(shooterSubsystem.manualCommand(()->10));
-    op_joystick.button(8).whileTrue(shooterSubsystem.manualCommand(()->-10));
-    shooterSubsystem.setDefaultCommand(shooterSubsystem.manualCommand(()->0)); 
-    op_joystick.button(7).whileTrue(intakeSubsystem.manualCommand(()->-7));
-    op_joystick.button(8).whileTrue(intakeSubsystem.manualCommand(()->7));
-    intakeSubsystem.setDefaultCommand(intakeSubsystem.manualCommand(()->0));
-
-    //flywheel spinup
-    op_joystick.x().onTrue(shooterSubsystem.manualCommand(()->-6));
-    op_joystick.b().onTrue(shooterSubsystem.manualCommand(()->0));
-    shooterSubsystem.setDefaultCommand(shooterSubsystem.manualCommand(()->0));
-
-    //Climb
-    joystick.leftTrigger().whileTrue(climbSubsystem.manualCommand(()->1));
-    climbSubsystem.setDefaultCommand(climbSubsystem.manualCommand(()->0));
-  }
-
-  
-  
-    
-  public RobotContainer() {
-    configureBindings();
-  }
-
-  public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
-  }
+    public Command getAutonomousCommand() {
+        return Commands.print("No autonomous command configured");
+    }
 }
