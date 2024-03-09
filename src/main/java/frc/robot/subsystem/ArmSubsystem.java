@@ -87,7 +87,9 @@ public class ArmSubsystem implements Subsystem {
         return new FunctionalCommand(
            ()->holdPosition = leftSide.getPosition().getValue(),
            ()->leftSide.setControl(leftPositionRequest.withPosition(holdPosition)),
-           null, null, this);
+           (end)->{},
+           ()->false,
+           this);
     }
 
     public Command zeroArm(boolean forceZero) {
