@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -53,6 +54,15 @@ public class RobotContainer {
     RobotShootState m_currentState = RobotShootState.Amp;
 
     private void configureBindings() {
+        /* Configure named commands here */
+        NamedCommands.registerCommand("ZeroArm", armSubsystem.zeroArm(false));
+        NamedCommands.registerCommand("AimAndShoot",
+            armSubsystem.goToPosition(()->ArmPositions.Subwoofer)
+                .alongWith(shooterSubsystem.goToSpeed(()->TargetSpeeds.SubwooferShot)).repeatedly()
+                .until(()->armSubsystem.atPosition() && shooterSubsystem.atSpeed())
+            .andThen(intakeSubsystem.shootNote()));
+        NamedCommands.registerCommand("StowArm", armSubsystem.goToPosition(()->ArmPositions.Stow));
+
         drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
                 drivetrain.applyRequest(() -> drive.withVelocityX(-driverJoystick.getLeftY() * MaxSpeed) // Drive forward with // negative Y (forward)
                         .withVelocityY(-driverJoystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
