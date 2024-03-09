@@ -25,7 +25,7 @@ public class ArmSubsystem implements Subsystem {
     private final double StallCurrent = 10;
     private final double FindZeroVoltage = -0.4;
     private final double StallCurrentDebounceTime = 0.3; // seconds
-    private final Measure<Angle> TargetAngleTolerance = Degrees.of(10);
+    private final Measure<Angle> TargetAngleTolerance = Degrees.of(30);
     private final Measure<Angle> ReferenceAtPosition = Degrees.of(0.1);
 
     TalonFX leftSide = new TalonFX(10, "Default Name");
@@ -42,10 +42,10 @@ public class ArmSubsystem implements Subsystem {
 
     public enum ArmPositions {
         Down(0),
-        Podium(1),
-        Subwoofer(2),
-        Amp(3),
-        Stow(3);
+        Podium(18),
+        Subwoofer(12.5),
+        Amp(54),
+        Stow(40);
 
         double position = 0;
 
@@ -58,7 +58,11 @@ public class ArmSubsystem implements Subsystem {
         var leftConfigs = new TalonFXConfiguration();
         leftConfigs.CurrentLimits.withStatorCurrentLimit(20)
                                  .withStatorCurrentLimitEnable(true);
-        leftConfigs.Slot0.kP = 0;
+        leftConfigs.Slot0.withKP(5)
+                         .withKD(0.1)
+                         .withKV(.12);
+        leftConfigs.MotionMagic.withMotionMagicAcceleration(200)
+                               .withMotionMagicCruiseVelocity(60);
         leftSide.getConfigurator().apply(leftConfigs);
 
         var rightConfigs = new TalonFXConfiguration();

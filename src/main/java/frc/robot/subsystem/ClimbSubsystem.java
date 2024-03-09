@@ -20,7 +20,7 @@ public class ClimbSubsystem implements Subsystem {
 
     public ClimbSubsystem() {
         var climbConfig = new TalonFXConfiguration();
-        climbConfig.CurrentLimits.withStatorCurrentLimit(4)
+        climbConfig.CurrentLimits.withStatorCurrentLimit(50)
                                  .withStatorCurrentLimitEnable(true);
         climbMotor.getConfigurator().apply(climbConfig);
 

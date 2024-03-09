@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class ShooterSubsystem implements Subsystem {
-    private final Measure<Velocity<Angle>> SpeedTolerance = RotationsPerSecond.of(5);
+    private final Measure<Velocity<Angle>> SpeedTolerance = RotationsPerSecond.of(20);
 
     TalonFX leftSide = new TalonFX(20, "Default Name");
     TalonFX rightSide = new TalonFX(21, "Default Name");
@@ -30,9 +30,9 @@ public class ShooterSubsystem implements Subsystem {
 
     public enum TargetSpeeds{
         Off(0, 0),
-        PodiumShot(0, 0),
-        SubwooferShot(0, 0),
-        AmpShot(0, 0);
+        PodiumShot(-26, -26),
+        SubwooferShot(-26, -26),
+        AmpShot(-40, -40);
 
         double LeftSpeed = 0;
         double RightSpeed = 0;
@@ -45,9 +45,11 @@ public class ShooterSubsystem implements Subsystem {
 
     public ShooterSubsystem(){
         var leftConfigs = new TalonFXConfiguration();
+        leftConfigs.Slot0.withKP(5);
         leftSide.getConfigurator().apply(leftConfigs);
 
         var rightConfigs = new TalonFXConfiguration();
+        rightConfigs.Slot0.withKP(5);
         rightSide.getConfigurator().apply(rightConfigs);
     }
 

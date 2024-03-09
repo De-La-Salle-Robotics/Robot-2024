@@ -69,13 +69,11 @@ public class RobotContainer {
                         .withRotationalRate(-driverJoystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
                 ));
 
-        driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        // driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
         driverJoystick.leftBumper().onTrue(armSubsystem.goToPosition(() -> ArmPositions.Down))
-                .whileTrue(intakeSubsystem.intakeNote()
-                        .onlyWhile(armSubsystem::atPosition)
-                        .until(intakeSubsystem::hasNote)
-                .andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
+                                   .whileTrue(intakeSubsystem.intakeNote());
+                        //.andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
 
         driverJoystick.y().onTrue(armSubsystem.goToPosition(()->ArmPositions.Stow));
         driverJoystick.x().onTrue(new InstantCommand(()->m_currentState = RobotShootState.Amp));
@@ -107,7 +105,7 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         new Trigger(()->Math.abs(operatorJoystick.getLeftY()) > 0.1).whileTrue(
-            armSubsystem.manualCommand(()->operatorJoystick.getLeftY())
+            armSubsystem.manualCommand(()->-operatorJoystick.getLeftY())
         );
 
         operatorJoystick.back().onTrue(armSubsystem.zeroArm(true));
@@ -117,15 +115,15 @@ public class RobotContainer {
         operatorJoystick.povRight().onTrue(armSubsystem.goToPosition(()->ArmPositions.Podium));
 
         operatorJoystick.leftTrigger().whileTrue(intakeSubsystem.manualCommand(()->7));
-        operatorJoystick.rightTrigger().whileTrue(intakeSubsystem.manualCommand(()->-7));
+        operatorJoystick.leftBumper().whileTrue(intakeSubsystem.manualCommand(()->-7));
 
         operatorJoystick.rightBumper().whileTrue(shooterSubsystem.manualCommand(()->3.8));
         operatorJoystick.rightTrigger().whileTrue(shooterSubsystem.manualCommand(()->-3.8));
 
         operatorJoystick.y().whileTrue(climbSubsystem.manualCommand(()->1, ()->0));
         operatorJoystick.a().whileTrue(climbSubsystem.manualCommand(()->-1, ()->0));
-        operatorJoystick.x().whileTrue(climbSubsystem.manualCommand(()->0, ()->0.4));
-        operatorJoystick.b().whileTrue(climbSubsystem.manualCommand(()->0, ()->-0.4));
+        operatorJoystick.x().whileTrue(climbSubsystem.manualCommand(()->0, ()->1));
+        operatorJoystick.b().whileTrue(climbSubsystem.manualCommand(()->0, ()->-1));
 
         // Arm
         armSubsystem.setDefaultCommand(armSubsystem.holdPosition());
