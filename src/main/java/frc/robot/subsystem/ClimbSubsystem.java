@@ -29,11 +29,11 @@ public class ClimbSubsystem implements Subsystem {
     }
 
     public Command manualCommand(DoubleSupplier climbOutput, DoubleSupplier winchOutput) {
-        return new RunCommand(() -> {
+        return run(() -> {
             climbMotor.setControl(climbRequest.withOutput(climbOutput.getAsDouble()));
 
             winchMotor.set(ControlMode.PercentOutput, winchOutput.getAsDouble());
 
-        }, this);
+        });
     }
 }

@@ -6,7 +6,6 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class IntakeSubsystem implements Subsystem {
@@ -20,21 +19,21 @@ public class IntakeSubsystem implements Subsystem {
     public IntakeSubsystem(){}
 
     public Command manualCommand(DoubleSupplier output) {
-        return new RunCommand(()->{
+        return run(()->{
             intakeMotor.setControl(leftRequest.withOutput(output.getAsDouble()));
-        }, this);
+        });
     }
 
     public Command intakeNote() {
-        return new RunCommand(()-> {
+        return run(()-> {
             intakeMotor.setControl(leftRequest.withOutput(IntakeVoltage));
-        }, this).until(this::hasNote);
+        }).until(this::hasNote);
     }
 
     public Command shootNote() {
-        return new RunCommand(()-> {
+        return run(()-> {
             intakeMotor.setControl(leftRequest.withOutput(ShootVoltage));
-        }, this);
+        });
     }
 
     public boolean hasNote() {

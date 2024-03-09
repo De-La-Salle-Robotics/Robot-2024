@@ -14,7 +14,6 @@ import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class ShooterSubsystem implements Subsystem {
@@ -53,18 +52,18 @@ public class ShooterSubsystem implements Subsystem {
     }
 
     public Command manualCommand(DoubleSupplier output) {
-        return new RunCommand(()->{
+        return run(()->{
             leftSide.setControl(leftRequest.withOutput(output.getAsDouble()));
             rightSide.setControl(rightRequest.withOutput(output.getAsDouble()));
-        }, this);
+        });
     }
 
     public Command goToSpeed(Supplier<TargetSpeeds> target) {
-        return new RunCommand(()-> {
+        return run(()-> {
             var targetEnum = target.get();
             leftSide.setControl(leftSpeedRequest.withVelocity(targetEnum.LeftSpeed));
             rightSide.setControl(rightSpeedRequest.withVelocity(targetEnum.RightSpeed));
-        }, this);
+        });
     }
 
     public boolean atSpeed() {

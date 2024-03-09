@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -71,15 +70,15 @@ public class ArmSubsystem implements Subsystem {
     }
 
     public Command manualCommand(DoubleSupplier output) {
-        return new RunCommand(()->{
+        return run(()->{
             leftSide.setControl(leftVoltageRequest.withOutput(output.getAsDouble()));
-        }, this);
+        });
     }
 
     public Command goToPosition(Supplier<ArmPositions> targetPosition) {
-        return new RunCommand(()-> {
+        return run(()-> {
             leftSide.setControl(leftPositionRequest.withPosition(targetPosition.get().position));
-        }, this);
+        });
     }
 
 
@@ -94,7 +93,7 @@ public class ArmSubsystem implements Subsystem {
 
     public Command zeroArm(boolean forceZero) {
         return new ConditionalCommand(
-                new RunCommand(()-> leftSide.setControl(leftVoltageRequest.withOutput(FindZeroVoltage)), this)
+                run(()-> leftSide.setControl(leftVoltageRequest.withOutput(FindZeroVoltage)))
                     .until(new Trigger(()->leftSide.getStatorCurrent().getValue() > StallCurrent).debounce(StallCurrentDebounceTime))
                     .andThen(new InstantCommand(()->leftSide.setPosition(0), this))
                     .andThen(new InstantCommand(()->hasZeroed = true)),
