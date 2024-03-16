@@ -7,16 +7,18 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class IntakeSubsystem implements Subsystem {
-    private final double IntakeVoltage = 7  ;
-    private final double ShootVoltage = 2;
+    private final double IntakeVoltage = 5;
+    private final double ShootVoltage = 4;
 
     TalonFX intakeMotor = new TalonFX(22, "Default Name");
 
     VoltageOut leftRequest = new VoltageOut(0);
+    DigitalInput noteSensor = new DigitalInput(0);
 
     public IntakeSubsystem(){
         var talonConfig = new TalonFXConfiguration();
@@ -43,6 +45,6 @@ public class IntakeSubsystem implements Subsystem {
     }
 
     public boolean hasNote() {
-        return false;
+        return !noteSensor.get();
     }
 }

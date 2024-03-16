@@ -30,7 +30,7 @@ public class ShooterSubsystem implements Subsystem {
 
     public enum TargetSpeeds{
         Off(0, 0),
-        PodiumShot(-26, -26),
+        PodiumShot(-26.65, -26.65),
         SubwooferShot(-26, -26),
         AmpShot(-40, -40);
 
