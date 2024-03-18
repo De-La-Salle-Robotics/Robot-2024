@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class ArmSubsystem implements Subsystem {
     private final double StallCurrent = 8;
-    private final double FindZeroVoltage = 2;
+    private final double FindZeroVoltage = 0.5;
     private final double StallCurrentDebounceTime = 0.3; // seconds
     private final Measure<Angle> TargetAngleTolerance = Degrees.of(30);
     private final Measure<Angle> ReferenceAtPosition = Degrees.of(0.1);
@@ -48,7 +48,7 @@ public class ArmSubsystem implements Subsystem {
     
     public enum ArmPositions {
         Down(0),
-        Podium(20),
+        Podium(16.5),
         Subwoofer(13),
         Amp(54),
         Stow(40);
@@ -114,7 +114,7 @@ public class ArmSubsystem implements Subsystem {
                 run(()-> {
                     leftSide.setControl(zeroRequest.withOutput(-StallCurrent * 1.5).withMaxAbsDutyCycle(FindZeroVoltage));
                 })
-                    .until(new Trigger(()->startZero && leftSide.getStatorCurrent().getValue() > StallCurrent).debounce(StallCurrentDebounceTime)))
+                    .until(new Trigger(()->startZero && Math.abs(leftSide.getVelocity().getValue()) < 1.0 && leftSide.getStatorCurrent().getValue() > StallCurrent).debounce(StallCurrentDebounceTime)))
                     .andThen(runOnce(()->{leftSide.setPosition(0); rightSide.setPosition(0);}))
                     .andThen(runOnce(()->hasZeroed = true))
                     .andThen(runOnce(()->startZero=false)),

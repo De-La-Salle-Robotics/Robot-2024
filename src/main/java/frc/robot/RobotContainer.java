@@ -8,9 +8,12 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
@@ -22,8 +25,8 @@ import frc.robot.subsystem.ShooterSubsystem.TargetSpeeds;
 import frc.robot.subsystem.ClimbSubsystem;
 
 public class RobotContainer {
-    private double MaxSpeed = 6; // 6 meters per second desired top speed
-    private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
+    private double MaxSpeed = 9; // 6 meters per second desired top speed
+    private double MaxAngularRate = 2.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final CommandXboxController driverJoystick = new CommandXboxController(0); // Driver joystick
@@ -60,8 +63,16 @@ public class RobotContainer {
             armSubsystem.goToPosition(()->ArmPositions.Subwoofer)
                 .alongWith(shooterSubsystem.goToSpeed(()->TargetSpeeds.SubwooferShot)).repeatedly()
                 .until(()->armSubsystem.atPosition() && shooterSubsystem.atSpeed())
-            .andThen(intakeSubsystem.shootNote()));
+            .andThen(new WaitCommand(0.5))
+            .andThen(intakeSubsystem.shootNote().withTimeout(0.5)));
         NamedCommands.registerCommand("StowArm", armSubsystem.goToPosition(()->ArmPositions.Stow));
+        NamedCommands.registerCommand("CollectNote",
+            armSubsystem.goToPosition(()->ArmPositions.Down)
+            .andThen(intakeSubsystem.intakeNote())
+            .andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
+        NamedCommands.registerCommand("PrepShot",
+            armSubsystem.goToPosition(()->ArmPositions.Subwoofer)
+            .alongWith(shooterSubsystem.goToSpeed(()->TargetSpeeds.SubwooferShot)).repeatedly());
 
         drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
                 drivetrain.applyRequest(() -> drive.withVelocityX(-driverJoystick.getLeftY() * MaxSpeed) // Drive forward with // negative Y (forward)
@@ -95,6 +106,7 @@ public class RobotContainer {
         ));
 
         driverJoystick.rightTrigger().and(shooterSubsystem::atSpeed).and(armSubsystem::atPosition).onTrue(intakeSubsystem.shootNote());
+        driverJoystick.rightBumper().onTrue(new InstantCommand(()->MaxSpeed=6)).onFalse(new InstantCommand(()->MaxSpeed=9));
 
         // reset the field-centric heading on left bumper press
         driverJoystick.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
@@ -138,11 +150,18 @@ public class RobotContainer {
         climbSubsystem.setDefaultCommand(climbSubsystem.manualCommand(()->0, ()->0));
     }
 
+    SendableChooser<String> autoChooser = new SendableChooser<String>();
     public RobotContainer() {
         configureBindings();
+
+        autoChooser.addOption("ShootCross", "ShootCross");
+        autoChooser.addOption("JustShoot", "JustShoot");
+        autoChooser.addOption("Nothing", "Nothing");
+
+        SmartDashboard.putData(autoChooser);
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return drivetrain.getAutoPath(autoChooser.getSelected());
     }
 }

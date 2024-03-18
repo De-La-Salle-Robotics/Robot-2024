@@ -32,7 +32,7 @@ public class ShooterSubsystem implements Subsystem {
         Off(0, 0),
         PodiumShot(-26.65, -26.65),
         SubwooferShot(-26, -26),
-        AmpShot(-40, -40);
+        AmpShot(-20, -20);
 
         double LeftSpeed = 0;
         double RightSpeed = 0;
