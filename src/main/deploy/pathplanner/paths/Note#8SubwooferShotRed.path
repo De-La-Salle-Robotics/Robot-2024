@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 11.5,
+        "y": 3.65
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 11.615150153377229,
+        "y": 3.6409018971884106
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 15.7,
+        "y": 4.4
+      },
+      "prevControl": {
+        "x": 15.236318164944024,
+        "y": 3.453429983783045
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -117.58043334875852,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "JoeyPaths",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

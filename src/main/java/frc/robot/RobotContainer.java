@@ -25,7 +25,7 @@ import frc.robot.subsystem.ShooterSubsystem.TargetSpeeds;
 import frc.robot.subsystem.ClimbSubsystem;
 
 public class RobotContainer {
-    private double MaxSpeed = 9; // 6 meters per second desired top speed
+    private double MaxSpeed = 10; // 6 meters per second desired top speed
     private double MaxAngularRate = 2.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -58,21 +58,28 @@ public class RobotContainer {
 
     private void configureBindings() {
         /* Configure named commands here */
-        NamedCommands.registerCommand("ZeroArm", armSubsystem.zeroArm(false));
+        NamedCommands.registerCommand("ZeroArm", armSubsystem.zeroArm(false)
+            .andThen(new WaitCommand(0.7)));
         NamedCommands.registerCommand("AimAndShoot",
             armSubsystem.goToPosition(()->ArmPositions.Subwoofer)
                 .alongWith(shooterSubsystem.goToSpeed(()->TargetSpeeds.SubwooferShot)).repeatedly()
                 .until(()->armSubsystem.atPosition() && shooterSubsystem.atSpeed())
-            .andThen(new WaitCommand(0.5))
+            .andThen(new WaitCommand(0.8))
             .andThen(intakeSubsystem.shootNote().withTimeout(0.5)));
         NamedCommands.registerCommand("StowArm", armSubsystem.goToPosition(()->ArmPositions.Stow));
         NamedCommands.registerCommand("CollectNote",
             armSubsystem.goToPosition(()->ArmPositions.Down)
             .andThen(intakeSubsystem.intakeNote())
             .andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
-        NamedCommands.registerCommand("PrepShot",
+        NamedCommands.registerCommand("PrepSubwooferShot",
             armSubsystem.goToPosition(()->ArmPositions.Subwoofer)
             .alongWith(shooterSubsystem.goToSpeed(()->TargetSpeeds.SubwooferShot)).repeatedly());
+        NamedCommands.registerCommand("PodiumShot",
+            armSubsystem.goToPosition(()->ArmPositions.Podium)
+                .alongWith(shooterSubsystem.goToSpeed(()->TargetSpeeds.PodiumShot)).repeatedly()
+                .until(()->armSubsystem.atPosition() && shooterSubsystem.atSpeed())
+            .andThen(new WaitCommand(0.5))
+            .andThen(intakeSubsystem.shootNote().withTimeout(0.5)));
 
         drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
                 drivetrain.applyRequest(() -> drive.withVelocityX(-driverJoystick.getLeftY() * MaxSpeed) // Drive forward with // negative Y (forward)
@@ -82,9 +89,10 @@ public class RobotContainer {
 
         // driverJoystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
-        driverJoystick.leftBumper().onTrue(armSubsystem.goToPosition(() -> ArmPositions.Down))
-                                   .whileTrue(intakeSubsystem.intakeNote());
-                        //.andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
+        driverJoystick.leftBumper().onTrue(armSubsystem.goToPosition(()-> ArmPositions.Down))
+                                    .whileTrue(intakeSubsystem.intakeNote());
+
+        //.andThen(armSubsystem.goToPosition(()->ArmPositions.Stow)));
 
         driverJoystick.y().onTrue(armSubsystem.goToPosition(()->ArmPositions.Stow));
         driverJoystick.x().onTrue(new InstantCommand(()->m_currentState = RobotShootState.Amp));
@@ -157,6 +165,15 @@ public class RobotContainer {
         autoChooser.addOption("ShootCross", "ShootCross");
         autoChooser.addOption("JustShoot", "JustShoot");
         autoChooser.addOption("Nothing", "Nothing");
+        autoChooser.addOption("Note#8Subwoofer", "Note#8Subwoofer");
+        autoChooser.addOption("Note#8Podium", "Note#8Podium");
+        autoChooser.addOption("Note#8and#7Podium", "Note#8and#7Podium");
+        autoChooser.addOption("Note#8SubwooferRed", "Note#8SubwooferRed");
+        autoChooser.addOption("GettingARatio", "GettingARatio");
+        autoChooser.addOption("Note#7BothTeams", "Note#7BothTeams");
+        autoChooser.addOption("Note#6SubwooferBlue", "Note#6SubwooferBlue");
+        autoChooser.addOption("Note#6SubwooferRed", "Note#6SubwooferRed");
+        autoChooser.addOption("ShootCrossOtherSide", "ShootCrossOtherSide");
 
         SmartDashboard.putData(autoChooser);
     }

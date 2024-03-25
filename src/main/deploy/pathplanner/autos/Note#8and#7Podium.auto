@@ -1,0 +1,67 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.83,
+      "y": 4.45
+    },
+    "rotation": -60.402403511265774
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "ZeroArm"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimAndShoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note#8"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note#8PodiumShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PodiumShot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note#7form#8PSCollect"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note#7PodiumShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PodiumShot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

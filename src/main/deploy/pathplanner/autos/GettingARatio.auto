@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.787031987758696,
-      "y": 4.461828723942754
+      "x": 0.0,
+      "y": 3.0
     },
-    "rotation": -60.068488159492176
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Shoot Note #8"
+            "pathName": "Gettingaratio"
           }
         }
       ]

@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7050561319382253,
-      "y": 4.379852868122284
+      "x": 0.6816344588466624,
+      "y": 6.686887667641241
     },
-    "rotation": -60.5382509174799
+    "rotation": 59.036243467926475
   },
   "command": {
     "type": "sequential",
@@ -24,9 +24,15 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 8.0
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "CrossAndLeave"
+            "pathName": "CrossAndLeaveOtherSide"
           }
         }
       ]

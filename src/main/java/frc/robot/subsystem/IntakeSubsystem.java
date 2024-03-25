@@ -13,8 +13,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class IntakeSubsystem implements Subsystem {
-    private final double IntakeVoltage = 5;
-    private final double ShootVoltage = 4;
+    private final double IntakeVoltage = 4;
+    private final double ShootVoltage = 3;
 
     TalonFX intakeMotor = new TalonFX(22, "Default Name");
 

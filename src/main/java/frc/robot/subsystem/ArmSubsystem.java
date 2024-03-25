@@ -48,8 +48,8 @@ public class ArmSubsystem implements Subsystem {
     
     public enum ArmPositions {
         Down(0),
-        Podium(16.5),
-        Subwoofer(13),
+        Podium(20),
+        Subwoofer(14),
         Amp(54),
         Stow(40);
 

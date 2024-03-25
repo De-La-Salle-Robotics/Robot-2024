@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7050561319382253,
-      "y": 4.379852868122284
+      "x": 15.7,
+      "y": 6.7
     },
-    "rotation": -60.5382509174799
+    "rotation": 119.48842929118173
   },
   "command": {
     "type": "sequential",
@@ -26,7 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CrossAndLeave"
+            "pathName": "Note#6SubwooferRed"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimAndShoot"
           }
         }
       ]

@@ -16,7 +16,7 @@ public class ClimbSubsystem implements Subsystem {
 
     VictorSPX winchMotor = new VictorSPX(25);
 
-    VoltageOut climbRequest = new VoltageOut(0);
+    VoltageOut climbRequest = new VoltageOut(3);
 
     public ClimbSubsystem() {
         var climbConfig = new TalonFXConfiguration();
